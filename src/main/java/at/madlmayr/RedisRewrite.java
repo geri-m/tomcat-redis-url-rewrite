@@ -9,6 +9,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class RedisRewrite extends RequestFilterValve {
@@ -55,9 +56,6 @@ public class RedisRewrite extends RequestFilterValve {
     @Override
     public void invoke(Request request, Response response) throws IOException, ServletException {
         long start = System.currentTimeMillis();
-        log.info("Start: " + request.getRequestURI());
-
-        pool.getResource().get("events/city/rome");
 
         String property;
         if (getAddConnectorPort()) {
@@ -65,8 +63,16 @@ public class RedisRewrite extends RequestFilterValve {
         } else {
             property = request.getRequest().getRemoteAddr();
         }
-        process(property, request, response);
-        log.info("Done, Duration: " + (System.currentTimeMillis() - start) + " ms");
+
+        String url = pool.getResource().get("events/city/rome");
+
+        if(url != null){
+            response.sendRedirect(url, HttpServletResponse.SC_MOVED_TEMPORARILY);
+        } else {
+            process(property, request, response);
+        }
+
+        log.info(String.format("Property '%s' Done '%s', Duration: '%s' ms", property, request.getRequestURI(), (System.currentTimeMillis() - start)));
     }
 
     @Override
