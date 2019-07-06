@@ -8,7 +8,7 @@ to rewrite URLs in Tomcat which are fetched from Redis.
 For local testing you simple can start a redis in a container
 
 ```
-$ docker run -p 6397:6397 redis
+$ docker run -p 6379:6379 redis
 ```
 
 ## Usage
@@ -22,7 +22,7 @@ $ docker run -p 6397:6397 redis
 <Context privileged="true" antiResourceLocking="false"
 		 docBase="${catalina.home}/webapps/manager">
 	<!-- Valve for using Redis for the URL rewriting -->
-	<Valve className="at.madlmayr.RedisRewrite" allow="^.*$" />
+	<Valve className="at.madlmayr.RedisRewrite" allow="^.*$"  host="localhost" port="6379" />
 </Context>
 ```
 
