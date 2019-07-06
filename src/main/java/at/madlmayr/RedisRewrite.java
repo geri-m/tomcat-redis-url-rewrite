@@ -17,6 +17,8 @@ public class RedisRewrite extends RequestFilterValve {
 
     @Override
     public void invoke(Request request, Response response) throws IOException, ServletException {
+        long start = System.currentTimeMillis();
+        log.info("Start: " + request.getRequestURI());
         String property;
         if (getAddConnectorPort()) {
             property = request.getRequest().getRemoteAddr() + ";" + request.getConnector().getPort();
@@ -24,6 +26,7 @@ public class RedisRewrite extends RequestFilterValve {
             property = request.getRequest().getRemoteAddr();
         }
         process(property, request, response);
+        log.info("Done, Duration: " + (System.currentTimeMillis() - start) + " ms");
     }
 
     @Override
