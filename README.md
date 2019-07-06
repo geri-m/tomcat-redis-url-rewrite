@@ -22,7 +22,7 @@ $ docker run -p 6379:6379 redis
 <Context privileged="true" antiResourceLocking="false"
 		 docBase="${catalina.home}/webapps/manager">
 	<!-- Valve for using Redis for the URL rewriting -->
-	<Valve className="at.madlmayr.RedisRewrite" allow="^.*$"  host="localhost" port="6379" />
+	<Valve className="at.madlmayr.RedisRewrite" allow="^.*$"  host="localhost" port="6379" timeout="100" />
 </Context>
 ```
 
