@@ -2,17 +2,16 @@ package at.madlmayr;
 
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.apache.catalina.valves.RequestFilterValve;
+import org.apache.catalina.valves.ValveBase;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class RedisRewrite extends RequestFilterValve {
+public class RedisRewrite extends ValveBase {
 
     private static final Log log = LogFactory.getLog(RedisRewrite.class);
 
@@ -24,7 +23,7 @@ public class RedisRewrite extends RequestFilterValve {
 
     public RedisRewrite(){
         super();
-        log.debug("constructor");
+        log.debug("Creating RedisRewrite Valve");
         createPool();
     }
 
@@ -46,37 +45,45 @@ public class RedisRewrite extends RequestFilterValve {
         createPool();
     }
 
+    // TODO: Create a Pool with 100 something connection. Check the average amount of concurrent requests.
     private void createPool(){
         log.info(String.format("create Pool: %s:%s, %s ms", host ,port , timeout));
         pool = new JedisPool(new JedisPoolConfig(), host, port, timeout);
     }
 
+
+    /**
+     * Simpel Method to create out of a request object a String with URL and the Query Parameter.
+     * @param request HTTP Request to the Webserver
+     * @return String in the format of http(s)://<host>/path/method?queryString
+     */
+    private static String createUrlWithPath(Request request){
+         StringBuffer s;
+         s = request.getRequestURL();
+
+         if(request.getQueryString() == null ||request.getQueryString().isEmpty()){
+             s.append("?");
+             s.append(request.getQueryString());
+         }
+
+         return s.toString();
+    }
+
     // --------------------------------------------------------- Public Methods
 
     @Override
-    public void invoke(Request request, Response response) throws IOException, ServletException {
+    public void invoke(Request request, Response response) throws IOException {
         long start = System.currentTimeMillis();
 
-        String property;
-        if (getAddConnectorPort()) {
-            property = request.getRequest().getRemoteAddr() + ";" + request.getConnector().getPort();
-        } else {
-            property = request.getRequest().getRemoteAddr();
-        }
 
         String url = pool.getResource().get("events/city/rome");
 
         if(url != null){
             response.sendRedirect(url, HttpServletResponse.SC_MOVED_TEMPORARILY);
+
         } else {
-            process(property, request, response);
+            log.info(String.format("No Rewrite Done for '%s', Duration: '%s' ms", createUrlWithPath(request), (System.currentTimeMillis() - start)));
         }
-
-        log.info(String.format("Property '%s' Done '%s', Duration: '%s' ms", property, request.getRequestURI(), (System.currentTimeMillis() - start)));
     }
 
-    @Override
-    protected Log getLog() {
-        return log;
-    }
 }
