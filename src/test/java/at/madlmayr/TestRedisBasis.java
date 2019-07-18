@@ -12,8 +12,8 @@ public class TestRedisBasis {
 
     @Test
     public void connectToRedisAndRWData(){
-        Jedis jedis = new Jedis("localhost", 6379);
-        jedis.set("events/city/rome", "32,15,223,828");
+        Jedis jedis = new Jedis(System.getenv("REDIS_HOST"), 6379);
+        // jedis.set("events/city/rome", "32,15,223,828");
         String cachedResponse = jedis.get("events/city/rome");
         assertEquals(cachedResponse, "32,15,223,828");
     }
@@ -30,7 +30,6 @@ public class TestRedisBasis {
         // Second - some sting + there must be a shop, brand or tag parameter.
         // Third  - there might be other parameters, wo don't use (shop, sale, searchstring, gender)  + '&' as separator
         // Forth  - the last parameter, which we store as the remainder (right before one-of-line)
-
         Pattern p = Pattern.compile("^(gclid=.*)?(?<start>.*(shop|brand|tag)=[0-9]+)+&?(.*(shop|sale|searchstring|gender)=.*?&?)*(|&(?<remainder>.*))$");
 
         // This is the path from the HTTP Request
