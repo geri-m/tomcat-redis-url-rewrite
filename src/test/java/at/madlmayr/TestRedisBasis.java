@@ -3,6 +3,7 @@ package at.madlmayr;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Jedis;
 
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,8 +15,13 @@ public class TestRedisBasis {
     public void connectToRedisAndRWData(){
         Jedis jedis = new Jedis(System.getenv("REDIS_HOST"), 6379);
         // jedis.set("events/city/rome", "32,15,223,828");
-        String cachedResponse = jedis.get("events/city/rome");
-        assertEquals(cachedResponse, "32,15,223,828");
+        Map<String, String> cachedResponse = jedis.hgetAll("de_DE");
+        assertEquals(cachedResponse.size(), 2);
+
+        for (Map.Entry<String, String> x : cachedResponse.entrySet()) {
+            System.out.println(x.getKey() + " " + x.getValue());
+        }
+
     }
 
     @Test
